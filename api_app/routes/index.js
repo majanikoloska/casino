@@ -11,6 +11,8 @@ router.route('/players/:pagination/:currentPage')
   .get(controllerPlayer.allPlayersPagination)
 router.route('/player')
   .post(controllerPlayer.playerCreate);
+router.route('/playerGames/:idPlayer/:pagination/:currentPage')
+  .get(controllerPlayer.gamesByPlayer)
 router.route('/player/:idPlayer')
   .get(controllerPlayer.playerByID)
   .put(controllerPlayer.updatePlayer)

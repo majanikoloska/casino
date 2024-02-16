@@ -1,23 +1,42 @@
 const mongoose = require('mongoose');
 const Game = mongoose.model('game');
 
+const fs = require('fs');
+
 
 const gameCreate = async (req, res) => {
-    var game_data = {
-        title: req.body.title,
-        description: req.body.description,
-        pictures: req.body.pictures,
-        players: req.body.players
-    };
+    const imagePaths = req.body.pictures;
+    console.log(imagePaths);
+    const base64Images = [];
 
-    try{
-        var game = await Game.create(game_data);
-        res.json(game)
+    try {
+        await Promise.all(imagePaths.map(async imagePath => {
+            try {
+                const data = await fs.promises.readFile(imagePath);
+                const base64Image = Buffer.from(data).toString('base64');
+                base64Images.push(base64Image);
+            } catch (err) {
+                console.error(err);
+                throw new Error(err.message);
+            }
+        }));
+
+        console.log(base64Images); 
+
+        const gameData = {
+            title: req.body.title,
+            description: req.body.description,
+            pictures: base64Images,
+            players: req.body.players
+        };
+
+        const game = await Game.create(gameData);
+        res.json(game);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch(error){
-        res.status(500).json({message: error.message})
-    } 
 };
+
 
 const allGames = async (req, res) => {
     try{
@@ -59,20 +78,37 @@ const updateGame = async (req, res) => {
         });
     }
 
-    var game = {
-        title: req.body.title,
-        description: req.body.description,
-        pictures: req.body.pictures,
-        players: req.body.players
-    }
+    const imagePaths = req.body.pictures;
+    console.log(imagePaths);
+    const base64Images = [];
 
-    try{
-        var game = await Game.findByIdAndUpdate(req.params.idGame, game);
-        res.json(game)
+    try {
+        
+        await Promise.all(imagePaths.map(async imagePath => {
+            try {
+                const data = await fs.promises.readFile(imagePath);
+                const base64Image = Buffer.from(data).toString('base64');
+                base64Images.push(base64Image);
+            } catch (err) {
+                console.error(err);
+                throw new Error(err.message);
+            }
+        }));
+
+        console.log(base64Images);
+
+        const gameData = {
+            title: req.body.title,
+            description: req.body.description,
+            pictures: base64Images,
+            players: req.body.players
+        };
+
+        const game = await Game.findByIdAndUpdate(req.params.idGame,gameData);
+        res.json(game);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch(error){
-        res.status(500).json({message: error.message})
-    }  
 };
   
 const deleteGame = async (req, res) => {

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Player = mongoose.model('player');
+const Game = mongoose.model('game');
 
 
 const playerCreate = async (req, res) => {
@@ -92,6 +93,29 @@ const deletePlayer = async (req, res) => {
         });
     }
 };
+
+const gamesByPlayer = async (req, res) => {
+    const {idPlayer} = req.params;
+    var skip = (req.params.currentPage - 1) * req.params.pagination;
+    if (idPlayer) {
+        
+        try{
+            // const player = await Player.findById(req.params.idPlayer);
+            const games = await Game.find({"players._id": req.params.idPlayer}).select('_id title')
+            .skip(skip).limit(req.params.pagination);
+            res.json(games)
+        }
+        catch(error){
+            res.status(500).json({message: error.message})
+        } 
+        
+    } else {
+        res.status(404).json({
+            "message": 
+                "Could not find player, idPlayer is required!"
+        });
+    }
+};
   
   module.exports = {
     playerCreate,
@@ -99,5 +123,6 @@ const deletePlayer = async (req, res) => {
     deletePlayer,
     playerByID,
     allPlayers,
-    allPlayersPagination
+    allPlayersPagination,
+    gamesByPlayer
   };

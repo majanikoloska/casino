@@ -28,7 +28,7 @@ const gameShema = new mongoose.Schema({
   title: {type: String, required: true},
   description: {type: String, required: true},
   players: [PlayerShema],
-  pictures: {type: Buffer, required: true}
+  pictures: [{type: Buffer, required: true}]
 });
 
 mongoose.model('game', gameShema, 'game');

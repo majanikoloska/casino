@@ -1,5 +1,9 @@
 
 const express = require('express');
+
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
 const app = express();
 
 require('./api_app/models/db')
@@ -8,6 +12,28 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('<h1>Hello, Express.js Server!</h1>');
 });
+
+
+var swaggerOptions = {
+    swaggerDefinition: {
+      openapi: "3.0.0",
+      info: {
+        title: "Game API",
+        version: "1.0.0",
+        description: "API documentation for managing casino players and games."
+      }
+    },
+    apis: [
+      "./api_app/models/game.js",
+      "./api_app/models/player.js",
+      "./api_app/models/db.js",
+      "./api_app/routes/index.js"
+    ]
+  };
+const swaggerDocument = swaggerJsDoc(swaggerOptions);
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 const routes = require('./api_app/routes/index');
 

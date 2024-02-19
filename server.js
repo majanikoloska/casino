@@ -30,10 +30,22 @@ var swaggerOptions = {
       "./api_app/routes/index.js"
     ]
   };
-const swaggerDocument = swaggerJsDoc(swaggerOptions);
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+let requestCounter = 0;
+
+const incrementRequestCounter = (req, res, next) => {
+  requestCounter++;
+  next();
+};
+
+app.get('/api/request-counter', (req, res) => {
+  res.json({ count: requestCounter });
+});
+
+app.use(incrementRequestCounter);
 
 const routes = require('./api_app/routes/index');
 
@@ -51,3 +63,7 @@ app.listen(port, () => {
 const indexApi = require('./api_app/routes/index');
 
 app.use('/index', indexApi);
+
+module.exports = {
+  app
+};

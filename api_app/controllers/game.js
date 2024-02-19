@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const Game = mongoose.model('game');
 
+const NodeCache = require('node-cache');
+const cache = new NodeCache();
+
 const fs = require('fs');
 
 
@@ -32,6 +35,7 @@ const gameCreate = async (req, res) => {
 
         const game = await Game.create(gameData);
         res.json(game);
+        cache.del('allGames');
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -40,8 +44,18 @@ const gameCreate = async (req, res) => {
 
 const allGames = async (req, res) => {
     try{
+        const cachedGames = cache.get('allGames');
+        if (cachedGames) {
+            console.log('Games retrieved from cache');
+            return res.json(cachedGames);
+        }
+
         const games = await Game.find();
-        res.json(games)
+        cache.set('allGames', games, 3600); // Cache data for 1 hour
+
+        console.log('Games fetched from database');
+
+        res.json(games);
     }
     catch(error){
         res.status(500).json({message: error.message})
@@ -63,7 +77,7 @@ const allGamesPagination = async (req, res) => {
 const gameByID = async (req, res) => {
     try{
         const game = await Game.findById(req.params.idGame);
-        res.json(game)
+        res.json(game);
     }
     catch(error){
         res.status(500).json({message: error.message})
@@ -106,6 +120,7 @@ const updateGame = async (req, res) => {
 
         const game = await Game.findByIdAndUpdate(req.params.idGame,gameData);
         res.json(game);
+        cache.del('allGames');
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -118,6 +133,7 @@ const deleteGame = async (req, res) => {
         try{
             await Game.findByIdAndDelete(idGame);
             res.status(204).json("idGame removed!");
+            cache.del('allGames');
         }
         catch(error){
             res.status(500).json({message: error.message})
